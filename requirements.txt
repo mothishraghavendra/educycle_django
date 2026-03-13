@@ -1,0 +1,22 @@
+# Django & Core
+Django==5.2.10
+Python==3.11
+
+# Database
+mysqlclient==2.2.0
+# Alternative if mysqlclient fails: PyMySQL==1.1.0
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Image Processing (for product images)
+Pillow==10.1.0
+
+# Utilities
+pytz==2023.3
+sqlparse==0.4.4
+
+# Development (optional)
+# Uncomment if needed:
+# django-debug-toolbar==4.2.0
+# django-extensions==3.2.3
