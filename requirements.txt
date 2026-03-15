@@ -12,6 +12,10 @@ python-dotenv==1.0.0
 # Image Processing (for product images)
 Pillow==10.1.0
 
+# Cloudinary Storage
+cloudinary==1.40.0
+django-cloudinary-storage==0.3.10
+
 # Utilities
 pytz==2023.3
 sqlparse==0.4.4

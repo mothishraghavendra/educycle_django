@@ -15,3 +15,7 @@ def addproducts(request):
         form = ProductForm()
     
     return render(request, 'addproducts.html', {'form': form})
+
+# @login_required
+# def dashboard(request):
+#     if request.method == 'POST':
