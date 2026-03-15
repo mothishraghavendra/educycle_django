@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -356,6 +357,80 @@
             padding: 20px;
             max-width: 1200px;
             margin: 0 auto;
+        }
+
+        /* Content Container */
+        #content-container {
+            width: 100%;
+            min-height: 400px;
+        }
+
+        .content-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading-spinner i {
+            font-size: 3rem;
+            color: #52ab98;
+            margin-bottom: 15px;
+            display: block;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-spinner p {
+            font-size: 1.1rem;
+            color: #666;
+            margin: 10px 0 0 0;
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #fef2f2;
+            border: 2px solid #fecaca;
+            border-radius: 8px;
+            margin: 20px;
+        }
+
+        .error-message i {
+            font-size: 2.5rem;
+            color: #dc2626;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .error-message p {
+            font-size: 1rem;
+            color: #7f1d1d;
+            margin: 0 0 15px 0;
+        }
+
+        .btn-retry {
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-retry:hover {
+            background-color: #b91c1c;
         }
 
         .content-left {
@@ -1058,7 +1133,7 @@
         <div class="header-top">
             <!-- Logo Section -->
             <div class="logo-section">
-                <img src="images/logo.png" alt="Educycle Logo">
+                <img src="{% static 'icons/logo.png' %}" alt="Educycle Logo">
             </div>
 
             <!-- Location Section -->
@@ -1089,17 +1164,17 @@
             <!-- Account Section -->
             <div class="account-section">
                 <div class="account-item">
-                    <a href="#" class="nav-item" onclick="loadPage('account.html', this)">
+                    <a href="#" class="nav-item" onclick="loadSection('profile', event)">
                     <span class="top-text">Hello, <span id="userName">Loading...</span></span>
                     </a>
                 </div>
 
                 <!-- Cart Section -->
                 <div class="cart-section">
-                    <a href="#" class="nav-item" onclick="loadPage('cart.html', this)">
+                    <a href="#" class="nav-item" onclick="loadSection('orders', event)">
                     <i class="bi bi-cart3 cart-icon"></i>
                     <span class="cart-count" id="cartCount">0</span>
-                    <span class="cart-text">Cart</span>
+                    <span class="cart-text">Orders</span>
                     </a>
                 </div>
                 <div class="cart-section">
@@ -1112,50 +1187,45 @@
 
         <!-- Navigation Bar -->
         <nav class="nav-bar">
-            <a href="#" class="nav-item active" onclick="loadPage('main.html', this)">
+            <a href="#" class="nav-item active" onclick="loadSection('products', event)">
                 <i class="bi bi-house"></i>
                 Home
             </a>
-            <a href="#" class="nav-item" onclick="loadPage('myitems.html', this)">
+            <a href="#" class="nav-item" onclick="loadSection('my-items', event)">
                 <i class="bi bi-box-seam"></i>
                 My Items
             </a>
-            <a href="#" class="nav-item" onclick="loadPage('account.html', this)">
+            <a href="#" class="nav-item" onclick="loadSection('profile', event)">
                 <i class="bi bi-gear"></i>
                 Settings
-            </a>
-            <a href="#" class="nav-item" onclick="loadPage('contact_us.html', this)">
-                <i class="bi bi-phone"></i>
-                contact us
             </a>
         </nav>
     </header>
 
     <!-- Main Content -->
     <main class="main-content">
-        <iframe 
-            id="mainFrame"
-            src="main.html" 
-            width="100%" 
-            height="600px" 
-            frameborder="0"
-            style="border: none; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-height: 400px;">
-        </iframe>
+        <div id="content-container" class="content-loading">
+            <div class="loading-spinner">
+                <i class="bi bi-hourglass-split"></i>
+                <p>Loading...</p>
+            </div>
+        </div>
     </main>
 
     <script>
         // Fetch user data when page loads
         async function fetchUserData() {
             try {
-                const response = await fetch('/api/profile');
+                const response = await fetch('/items/api/user-data/');
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Update username
-                    document.getElementById('userName').textContent = data.user.username;
+                    // Update username/name - show first name if available, otherwise username
+                    const displayName = data.user.first_name || data.user.username;
+                    document.getElementById('userName').textContent = displayName;
                     
                     // Update location
-                    document.getElementById('userLocation').textContent = data.user.location;
+                    document.getElementById('userLocation').textContent = data.user.location || 'Location not set';
                     
                     // Fetch cart count after user data is loaded
                     fetchCartCount();
@@ -1211,19 +1281,67 @@
             }
         }
 
-        function loadPage(page, navItem) {
-            // Update iframe source
-            document.getElementById('mainFrame').src = page;
+        function loadSection(section, event) {
+            event.preventDefault();
             
-            // Update navigation active state
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            navItem.classList.add('active');
+            // Map section names to API URLs
+            const sectionMap = {
+                'products': '{% url "api_products" %}',
+                'my-items': '{% url "api_my_products" %}',
+                'profile': '{% url "api_profile" %}',
+                'orders': '{% url "api_orders" %}'
+            };
             
-            // Update page title based on selection
-            const pageTitle = navItem.textContent.trim();
-            document.title = `${pageTitle} - Educycle Dashboard`;
+            const url = sectionMap[section];
+            if (!url) {
+                console.error('Unknown section:', section);
+                return;
+            }
+            
+            const container = document.getElementById('content-container');
+            
+            // Show loading state
+            container.innerHTML = `
+                <div class="loading-spinner">
+                    <i class="bi bi-hourglass-split"></i>
+                    <p>Loading...</p>
+                </div>
+            `;
+            container.classList.add('content-loading');
+            
+            // Fetch and load the section
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then(html => {
+                    container.innerHTML = html;
+                    container.classList.remove('content-loading');
+                    
+                    // Update active navigation item
+                    document.querySelectorAll('.nav-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    event.target.closest('.nav-item').classList.add('active');
+                    
+                    // Update page title
+                    const sectionTitle = section.charAt(0).toUpperCase() + section.slice(1);
+                    document.title = `${sectionTitle} - Educycle Dashboard`;
+                })
+                .catch(error => {
+                    console.error('Error loading section:', error);
+                    container.innerHTML = `
+                        <div class="error-message">
+                            <i class="bi bi-exclamation-circle"></i>
+                            <p>Failed to load content. Please try again.</p>
+                            <button onclick="loadSection('${section}', event)" class="btn btn-retry">
+                                Retry
+                            </button>
+                        </div>
+                    `;
+                    container.classList.remove('content-loading');
+                });
         }
 
         // Logout function
@@ -1253,61 +1371,14 @@
             }
         }
 
-        // Listen for messages from iframe to handle internal navigation
-        window.addEventListener('message', function(event) {
-            if (event.data.type === 'navigate') {
-                if (event.data.page) {
-                    // Old style navigation with page name
-                    loadPage(event.data.page, document.querySelector(`[onclick*="${event.data.page}"]`));
-                } else if (event.data.url) {
-                    // New style navigation with full URL
-                    const iframe = document.getElementById('mainFrame');
-                    if (iframe) {
-                        iframe.src = event.data.url;
-                        console.log('🔄 Navigating iframe to:', event.data.url);
-                    }
-                }
-            } else if (event.data.type === 'cartUpdated') {
-                // Handle cart updates from iframe
-                console.log('🛒 Cart updated from iframe:', event.data);
-                
-                if (event.data.action === 'add') {
-                    // Refresh cart count when item is added
-                    fetchCartCount();
-                } else if (event.data.action === 'remove') {
-                    // Refresh cart count when item is removed
-                    fetchCartCount();
-                } else if (event.data.action === 'update') {
-                    // Direct count update
-                    updateCartCount(event.data.count);
-                }
-            }
-        });
-
         // Load user data when page loads
         window.addEventListener('load', function() {
             fetchUserData();
-            adjustIframeHeight();
+            initializeSearch();
+            // Load the default section (products)
+            const event = { preventDefault: () => {} };
+            loadSection('products', event);
         });
-
-        // Adjust iframe height for mobile devices
-        function adjustIframeHeight() {
-            const iframe = document.getElementById('mainFrame');
-            const updateHeight = () => {
-                if (window.innerWidth <= 768) {
-                    const availableHeight = window.innerHeight - document.querySelector('.header').offsetHeight - 40;
-                    iframe.style.height = Math.max(400, availableHeight) + 'px';
-                } else {
-                    iframe.style.height = '600px';
-                }
-            };
-            
-            updateHeight();
-            window.addEventListener('resize', updateHeight);
-            window.addEventListener('orientationchange', () => {
-                setTimeout(updateHeight, 100);
-            });
-        }
 
         // Add touch-friendly navigation for mobile
         function enableTouchNavigation() {
@@ -1509,20 +1580,14 @@
         // Open product detail page
         function openProductDetail(productId, productType) {
             hideSearchResults();
+            // Navigate directly to product detail page
             let detailUrl;
             if (productType === 'software') {
                 detailUrl = `software_detail.html?id=${productId}`;
             } else {
                 detailUrl = `regular_product_detail.html?id=${productId}`;
             }
-            // Navigate iframe to product detail page if present, else redirect
-            const iframe = document.getElementById('mainFrame');
-            if (iframe) {
-                iframe.src = detailUrl;
-                console.log('🔄 Opening product detail:', detailUrl);
-            } else {
-                window.location.href = detailUrl;
-            }
+            window.location.href = detailUrl;
             // Clear search input
             searchInput.value = '';
         }

@@ -1,0 +1,294 @@
+<!-- User Profile Section -->
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            <i class="bi bi-person-circle"></i>
+        </div>
+        <div class="profile-info">
+            <h2 class="profile-name">{{ user.first_name }} {{ user.last_name }}</h2>
+            <p class="profile-username">@{{ user.username }}</p>
+            <p class="profile-email">{{ user.email }}</p>
+        </div>
+        <button class="btn-edit-profile" onclick="editProfile()">
+            <i class="bi bi-pencil"></i> Edit Profile
+        </button>
+    </div>
+
+    <div class="profile-content">
+        <div class="profile-section">
+            <h3 class="section-title">Contact Information</h3>
+            <div class="profile-field">
+                <label>Phone Number</label>
+                <p>{{ user.phone_number|default:"Not provided" }}</p>
+            </div>
+            <div class="profile-field">
+                <label>Email</label>
+                <p>{{ user.email }}</p>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h3 class="section-title">Account Statistics</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ products_count }}</div>
+                    <div class="stat-label">Products Listed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ exchanges_count }}</div>
+                    <div class="stat-label">Exchanges Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ reviews_count }}</div>
+                    <div class="stat-label">Reviews Received</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">★ {{ rating|default:"N/A" }}</div>
+                    <div class="stat-label">Average Rating</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h3 class="section-title">Account Settings</h3>
+            <div class="settings-list">
+                <button class="setting-item" onclick="changePassword()">
+                    <i class="bi bi-lock"></i>
+                    <span>Change Password</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+                <button class="setting-item" onclick="manageNotifications()">
+                    <i class="bi bi-bell"></i>
+                    <span>Notification Preferences</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+                <button class="setting-item" onclick="privacySettings()">
+                    <i class="bi bi-shield"></i>
+                    <span>Privacy Settings</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+                <button class="setting-item danger" onclick="deleteAccount()">
+                    <i class="bi bi-trash"></i>
+                    <span>Delete Account</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-container {
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+    }
+
+    .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 20px;
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: white;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+
+    .profile-avatar {
+        font-size: 4rem;
+        flex-shrink: 0;
+    }
+
+    .profile-info {
+        flex: 1;
+    }
+
+    .profile-name {
+        font-size: 1.5rem;
+        margin: 0 0 5px 0;
+        font-weight: 700;
+    }
+
+    .profile-username {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin: 0;
+        color: #e0f2fe;
+    }
+
+    .profile-email {
+        font-size: 0.85rem;
+        opacity: 0.8;
+        margin: 5px 0 0 0;
+    }
+
+    .btn-edit-profile {
+        padding: 10px 20px;
+        background-color: white;
+        color: #1e3a8a;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+        flex-shrink: 0;
+    }
+
+    .btn-edit-profile:hover {
+        background-color: #f0f9ff;
+        transform: translateY(-2px);
+    }
+
+    .profile-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+    }
+
+    .profile-section {
+        background: #f9fafb;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1e3a8a;
+        margin: 0 0 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .profile-field {
+        margin-bottom: 15px;
+    }
+
+    .profile-field:last-child {
+        margin-bottom: 0;
+    }
+
+    .profile-field label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .profile-field p {
+        margin: 0;
+        font-size: 1rem;
+        color: #1f2937;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 15px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        text-align: center;
+        border: 1px solid #e5e7eb;
+    }
+
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #52ab98;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+
+    .settings-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .setting-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #1f2937;
+    }
+
+    .setting-item:hover {
+        background-color: #f3f4f6;
+        border-color: #52ab98;
+        transform: translateX(5px);
+    }
+
+    .setting-item i:first-child {
+        font-size: 1.2rem;
+        color: #52ab98;
+        flex-shrink: 0;
+    }
+
+    .setting-item i:last-child {
+        color: #d1d5db;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+
+    .setting-item.danger {
+        color: #ef4444;
+    }
+
+    .setting-item.danger i:first-child {
+        color: #ef4444;
+    }
+
+    .setting-item.danger:hover {
+        background-color: #fef2f2;
+        border-color: #ef4444;
+    }
+
+    @media (max-width: 768px) {
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .profile-info {
+            width: 100%;
+        }
+
+        .btn-edit-profile {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .profile-content {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>

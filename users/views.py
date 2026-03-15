@@ -15,7 +15,7 @@ def login_views(request):
         if user is not None:
             login(request,user)
             print("login success")
-            return redirect("addproducts")
+            return redirect("dashboard")
         else:
             context = {'error': 'Invalid username or password'}
             return render(request, 'login.html', context)
@@ -27,7 +27,7 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('home')
+            return redirect('dashboard')
     else:
         form = CustomUserCreationForm()
 

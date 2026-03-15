@@ -1,0 +1,320 @@
+<!-- Products List Section -->
+<div class="section-container">
+    <div class="section-header">
+        {% if section == 'my-items' %}
+            <h2 class="section-title">My Products</h2>
+            <a href="{% url 'addproducts' %}" class="btn-add-product">
+                <i class="bi bi-plus-circle"></i> Add New Product
+            </a>
+        {% else %}
+            <h2 class="section-title">Available Products</h2>
+        {% endif %}
+    </div>
+
+    {% if products %}
+        <div class="products-grid">
+            {% for product in products %}
+                <div class="product-card">
+                    <div class="product-image-container">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+                        {% else %}
+                            <div class="product-image-placeholder">
+                                <i class="bi bi-image"></i>
+                            </div>
+                        {% endif %}
+                        <span class="product-status {{ product.status }}">{{ product.get_status_display }}</span>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">{{ product.title }}</h3>
+                        <p class="product-description">{{ product.description|truncatewords:10 }}</p>
+                        <div class="product-details">
+                            <span class="product-price">₹{{ product.price }}</span>
+                            <span class="product-date">{{ product.created_at|date:"M d, Y" }}</span>
+                        </div>
+                        {% if section == 'my-items' %}
+                            <!-- Edit and Delete buttons for user's own products -->
+                            <div class="product-actions">
+                                <button class="btn btn-edit" onclick="editProduct({{ product.id }})">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+                                <button class="btn btn-delete" onclick="deleteProduct({{ product.id }})">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </div>
+                        {% else %}
+                            <!-- View and Request buttons for other users' products -->
+                            <div class="product-actions">
+                                <button class="btn btn-view" onclick="viewProduct({{ product.id }})">
+                                    <i class="bi bi-eye"></i> View
+                                </button>
+                                <button class="btn btn-request" onclick="requestExchange({{ product.id }})">
+                                    <i class="bi bi-send"></i> Request
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            {% if section == 'my-items' %}
+                <p>No products listed yet</p>
+                <a href="{% url 'addproducts' %}" class="btn btn-primary">Add Your First Product</a>
+            {% else %}
+                <p>No products available at the moment</p>
+                <a href="javascript:loadSection('my-items', event)" class="btn btn-primary">List Your Product</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .section-container {
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 15px;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        color: #1e3a8a;
+        margin: 0;
+    }
+
+    .btn-add-product {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background-color: #52ab98;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: background-color 0.3s;
+    }
+
+    .btn-add-product:hover {
+        background-color: #3d8476;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .product-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: box-shadow 0.3s, transform 0.3s;
+        cursor: pointer;
+    }
+
+    .product-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .product-image-container {
+        position: relative;
+        overflow: hidden;
+        background: #f5f5f5;
+    }
+
+    .product-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .product-image-placeholder {
+        width: 100%;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f0f0f0;
+        color: #999;
+        font-size: 2rem;
+    }
+
+    .product-status {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .product-status.available {
+        background-color: #52ab98;
+        color: white;
+    }
+
+    .product-status.exchanged {
+        background-color: #f59e0b;
+        color: white;
+    }
+
+    .product-status.sold {
+        background-color: #ef4444;
+        color: white;
+    }
+
+    .product-info {
+        padding: 15px;
+    }
+
+    .product-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+        color: #1e3a8a;
+    }
+
+    .product-description {
+        font-size: 0.9rem;
+        color: #666;
+        margin: 0 0 12px 0;
+        line-height: 1.4;
+    }
+
+    .product-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .product-price {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #52ab98;
+    }
+
+    .product-date {
+        font-size: 0.8rem;
+        color: #999;
+    }
+
+    .product-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .btn-edit {
+        background-color: #3b82f6;
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background-color: #2563eb;
+    }
+
+    .btn-delete {
+        background-color: #ef4444;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background-color: #dc2626;
+    }
+
+    .btn-view {
+        background-color: #3b82f6;
+        color: white;
+    }
+
+    .btn-view:hover {
+        background-color: #2563eb;
+    }
+
+    .btn-request {
+        background-color: #52ab98;
+        color: white;
+    }
+
+    .btn-request:hover {
+        background-color: #3d8476;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: #ccc;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        font-size: 1.1rem;
+        color: #666;
+        margin: 10px 0 20px 0;
+    }
+
+    .btn-primary {
+        background-color: #52ab98;
+        color: white;
+        padding: 12px 24px;
+        display: inline-flex;
+    }
+
+    .btn-primary:hover {
+        background-color: #3d8476;
+    }
+
+    @media (max-width: 768px) {
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .product-image {
+            height: 150px;
+        }
+    }
+</style>
