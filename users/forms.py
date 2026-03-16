@@ -23,7 +23,12 @@ class CustomUserCreationForm(UserCreationForm):
     password2 = forms.CharField(widget=forms.PasswordInput(attrs={
         "placeholder": "Confirm Password"
     }))
-
+    location = forms.ChoiceField(
+        choices=User.LOCATION_CHOICES,
+        widget=forms.Select(attrs={
+            "class": "form-control"
+        })
+    )
     class Meta:
         model = User
-        fields = ("username", "email", "phone_number")
+        fields = ("username", "email", "phone_number", "location")

@@ -64,8 +64,9 @@
                 <p>No products listed yet</p>
                 <a href="{% url 'addproducts' %}" class="btn btn-primary">Add Your First Product</a>
             {% else %}
-                <p>No products available at the moment</p>
-                <a href="javascript:loadSection('my-items', event)" class="btn btn-primary">List Your Product</a>
+                <p>Welcome to Educycle!</p>
+                <p style="font-size: 0.9rem; color: #666; margin-top: 8px;">Be the first to list your products and start exchanging items with the community.</p>
+                <a href="javascript:loadSection('my-items', event)" class="btn btn-primary">Start by Adding a Product</a>
             {% endif %}
         </div>
     {% endif %}

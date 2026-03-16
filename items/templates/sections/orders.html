@@ -28,7 +28,7 @@
                             <p>{{ exchange.product.title }}</p>
                         </div>
                         <div class="item-detail">
-                            <label>{{ request.user == exchange.seller|yesno:"Buyer,Seller" }}</label>
+                            <label>{% if request.user == exchange.seller %}Buyer{% else %}Seller{% endif %}</label>
                             {% if request.user == exchange.seller %}
                                 <p>{{ exchange.buyer.username }}</p>
                             {% else %}

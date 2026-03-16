@@ -1282,7 +1282,9 @@
         }
 
         function loadSection(section, event) {
-            event.preventDefault();
+            if (event) {
+                event.preventDefault();
+            }
             
             // Map section names to API URLs
             const sectionMap = {
@@ -1323,7 +1325,14 @@
                     document.querySelectorAll('.nav-item').forEach(item => {
                         item.classList.remove('active');
                     });
-                    event.target.closest('.nav-item').classList.add('active');
+                    
+                    // Find and mark the nav item corresponding to this section
+                    const navItems = document.querySelectorAll('.nav-item');
+                    navItems.forEach(item => {
+                        if (item.getAttribute('onclick').includes(`'${section}'`)) {
+                            item.classList.add('active');
+                        }
+                    });
                     
                     // Update page title
                     const sectionTitle = section.charAt(0).toUpperCase() + section.slice(1);

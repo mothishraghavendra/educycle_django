@@ -27,8 +27,18 @@ def dashboard(request):
 
 @login_required
 def get_products_section(request):
-    """AJAX endpoint to load home section (other users' products)"""
-    products = Product.objects.exclude(seller=request.user).order_by('-created_at')
+    """AJAX endpoint to load home section (all available products)"""
+    # Show all products with status 'available', excluding user's own for initial browse
+    # But show all products if very few exist (to help new users)
+    products = Product.objects.filter(status='available').order_by('-created_at')
+    
+    # If fewer than 3 products exist, show all including user's own to help them understand the system
+    if products.count() < 3:
+        products = Product.objects.all().order_by('-created_at')
+    else:
+        # Otherwise exclude user's own products
+        products = products.exclude(seller=request.user)
+    
     return render(request, 'sections/products_list.html', {'products': products, 'section': 'home'})
 
 @login_required
@@ -57,15 +67,8 @@ def get_profile_section(request):
 
 @login_required
 def get_orders_section(request):
-    """AJAX endpoint to load orders/exchanges section"""
-    exchanges = Exchange.objects.filter(
-        Q(buyer=request.user) | Q(seller=request.user)
-    ).order_by('-created_at')
-    
-    context = {
-        'exchanges': exchanges,
-    }
-    return render(request, 'sections/orders.html', context)
+    """AJAX endpoint - redirect to cart page"""
+    return redirect('exchanges:cart')
 
 @login_required
 def get_user_data(request):
