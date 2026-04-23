@@ -1,0 +1,332 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product - Educycle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f3f3f3;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+        }
+
+        .header a {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #1e3a8a;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #1e3a8a;
+            margin: 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="file"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        input[type="file"] {
+            padding: 8px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #52ab98;
+            box-shadow: 0 0 0 3px rgba(82, 171, 152, 0.1);
+        }
+
+        .image-preview {
+            margin-top: 10px;
+            max-width: 200px;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-save {
+            background-color: #52ab98;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background-color: #3d8476;
+        }
+
+        .btn-cancel {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-cancel:hover {
+            background-color: #ccc;
+        }
+
+        .error-message {
+            background-color: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .success-message {
+            background-color: #efe;
+            border: 1px solid #cfc;
+            color: #3c3;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .form-error {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="javascript:history.back();" title="Go Back">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h1>Edit Product</h1>
+        </div>
+
+        {% if success %}
+            <div class="success-message">
+                <i class="bi bi-check-circle"></i>
+                {{ message }}
+                <p style="margin-top: 10px; font-size: 0.9rem;">Redirecting back to dashboard...</p>
+            </div>
+            <script>
+                setTimeout(() => {
+                    window.location.href = '/items/dashboard/';
+                }, 2000);
+            </script>
+        {% endif %}
+
+        {% if errors %}
+            <div class="error-message">
+                <i class="bi bi-exclamation-circle"></i>
+                <strong>Please correct the errors below:</strong>
+                {% if form.non_field_errors %}
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_title">Product Title</label>
+                <input 
+                    type="text" 
+                    id="id_title"
+                    name="title"
+                    value="{{ form.title.value|default:'' }}"
+                    placeholder="Enter product title"
+                    required
+                >
+                {% if form.title.errors %}
+                    <div class="form-error">
+                        {% for error in form.title.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_description">Description</label>
+                <textarea 
+                    id="id_description"
+                    name="description"
+                    placeholder="Enter product description"
+                    required
+                >{{ form.description.value|default:'' }}</textarea>
+                {% if form.description.errors %}
+                    <div class="form-error">
+                        {% for error in form.description.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_price">Price (₹)</label>
+                <input 
+                    type="number" 
+                    id="id_price"
+                    name="price"
+                    value="{{ form.price.value|default:'' }}"
+                    placeholder="Enter price"
+                    step="0.01"
+                    required
+                >
+                {% if form.price.errors %}
+                    <div class="form-error">
+                        {% for error in form.price.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if product.image %}
+                <div class="form-group">
+                    <label>Current Image</label>
+                    <div class="image-preview">
+                        <img src="{{ product.image.url }}" alt="{{ product.title }}">
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="id_image">Update Image (Optional)</label>
+                <input 
+                    type="file" 
+                    id="id_image"
+                    name="image"
+                    accept="image/*"
+                >
+                <p style="font-size: 0.9rem; color: #666; margin-top: 5px;">
+                    Supported formats: JPG, PNG, WebP (Max size: 5MB)
+                </p>
+                {% if form.image.errors %}
+                    <div class="form-error">
+                        {% for error in form.image.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_status">Status</label>
+                <select 
+                    id="id_status"
+                    name="status"
+                    required
+                >
+                    <option value="">Select Status</option>
+                    <option value="available" {% if form.status.value == 'available' %}selected{% endif %}>Available</option>
+                    <option value="exchanged" {% if form.status.value == 'exchanged' %}selected{% endif %}>Exchanged</option>
+                    <option value="sold" {% if form.status.value == 'sold' %}selected{% endif %}>Sold</option>
+                </select>
+                {% if form.status.errors %}
+                    <div class="form-error">
+                        {% for error in form.status.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save">
+                    <i class="bi bi-check-circle"></i>
+                    Save Changes
+                </button>
+                <button type="button" class="btn btn-cancel" onclick="history.back();">
+                    <i class="bi bi-x-circle"></i>
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

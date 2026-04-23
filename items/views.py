@@ -92,3 +92,107 @@ def get_user_data(request):
             'success': False,
             'message': str(e)
         }, status=400)
+
+
+@login_required
+def delete_product(request, product_id):
+    """Delete a product (only if user is the seller)"""
+    try:
+        product = Product.objects.get(id=product_id, seller=request.user)
+        product.delete()
+        return JsonResponse({
+            'success': True,
+            'message': 'Product deleted successfully'
+        })
+    except Product.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Product not found or you do not have permission to delete it'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
+
+
+@login_required
+def edit_product(request, product_id):
+    """Edit a product (only if user is the seller)"""
+    try:
+        product = Product.objects.get(id=product_id, seller=request.user)
+        
+        if request.method == 'POST':
+            form = ProductForm(request.POST, request.FILES, instance=product)
+            if form.is_valid():
+                form.save()
+                # Check if it's an AJAX request
+                if request.headers.get('Accept') == 'application/json':
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Product updated successfully'
+                    })
+                else:
+                    # Render the form with success message
+                    return render(request, 'edit_product.html', {
+                        'form': form,
+                        'product': product,
+                        'success': True,
+                        'message': 'Product updated successfully'
+                    })
+            else:
+                # Return form with errors
+                return render(request, 'edit_product.html', {
+                    'form': form,
+                    'product': product,
+                    'errors': True
+                })
+        else:
+            # Render edit form for GET request
+            form = ProductForm(instance=product)
+            return render(request, 'edit_product.html', {'form': form, 'product': product})
+    
+    except Product.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Product not found or you do not have permission to edit it'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
+
+
+@login_required
+def get_product_details(request, product_id):
+    """Get product details as JSON"""
+    try:
+        product = Product.objects.get(id=product_id)
+        return JsonResponse({
+            'success': True,
+            'product': {
+                'id': product.id,
+                'title': product.title,
+                'description': product.description,
+                'price': float(product.price),
+                'status': product.status,
+                'image': product.image.url if product.image else None,
+                'seller': {
+                    'id': product.seller.id,
+                    'name': product.seller.get_full_name() or product.seller.username,
+                    'phone': product.seller.phone_number if hasattr(product.seller, 'phone_number') else '',
+                    'location': product.seller.location if hasattr(product.seller, 'location') else ''
+                }
+            }
+        })
+    except Product.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Product not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
